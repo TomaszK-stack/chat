@@ -1,13 +1,16 @@
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintWriter;
 import java.sql.SQLException;
 
 public class Autentykacja implements ActionListener {
     Myframe myframe;
     WatekServer watekServer;
-    public Autentykacja(Myframe myframe,  WatekServer watekServer) {
+    PrintWriter printWriter;
+    public Autentykacja(Myframe myframe, PrintWriter printWriter) {
+        this.printWriter = printWriter;
         this.myframe = myframe;
-        this.watekServer = watekServer;
 }
 
     @Override
@@ -16,10 +19,12 @@ public class Autentykacja implements ActionListener {
         String username = new String(loginButton.username.getText());
         String password = new String(loginButton.password.getPassword());
         try {
-            if(walidacja(username, password)){
-                myframe.lista_uzyt();
+            if(walidacja(username, password) == true){
+
                 System.out.println("czat");
                 this.myframe.login = username;
+                printWriter.println("dodaj " + username);
+                myframe.lista_uzyt();
             }else {
                 myframe.logowanie();
                 System.out.println("Nieprawidłowe dane");
@@ -33,7 +38,7 @@ public class Autentykacja implements ActionListener {
         try {
             if (!SqlConn.koneksja("select count(*) from users where login =" + "'" + login + "'" + " and" + " password = " + "'" + haslo + "'", false).equals("0/")) {
                 System.out.println("zalogowano pomyślnie");
-                watekServer.setLogin(login);
+
                 return true;
             } else {
                 System.out.println("błąd");

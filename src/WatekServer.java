@@ -30,7 +30,7 @@ public class WatekServer extends Thread{
     @Override
     public void run() {
         try {
-            Listener listener = new Listener(incoming);
+            Listener listener = new Listener(incoming, this.server);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

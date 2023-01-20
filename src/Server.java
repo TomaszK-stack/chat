@@ -11,8 +11,11 @@ import java.util.*;
 
 
 public class Server {
-    ArrayList<WatekServer> lista_osob = new ArrayList<>();
-    HashMap<Integer, WatekServer> mapa_osob = new HashMap<>();
+//    ArrayList<WatekServer> lista_osob = new ArrayList<>();
+//    HashMap<Integer, WatekServer> mapa_osob = new HashMap<>();
+
+    List<String> lista_osob = new ArrayList<>();
+    Map<String, PrintWriter> mapa_osob = new HashMap<>();
     public static void main(String[] args) throws IOException,SQLException {
         Server server = new Server();
         server.utworz_server();
@@ -27,8 +30,9 @@ public class Server {
         while (true){
             Socket incoming = s.accept();
             WatekServer watek = new WatekServer(incoming, this );
-            lista_osob.add(watek);
-            mapa_osob.put(i, watek);
+//            lista_osob.add(watek);
+//            mapa_osob.put(i, watek);
+
             i++;
 
 

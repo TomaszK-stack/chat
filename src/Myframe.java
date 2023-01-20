@@ -2,8 +2,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class Myframe extends JFrame implements ActionListener {
     JPanel log_re_panel;
@@ -17,9 +18,20 @@ public class Myframe extends JFrame implements ActionListener {
     WatekServer watekServer;
     String login;
     JButton refresh;
+    BufferedWriter out;
+    PrintWriter printWriter;
+
+    ObjectInputStream input;
+    Klient klient;
+
+    public Myframe(Klient klient) throws HeadlessException, IOException {
+        this.klient = klient;
+        this.out = new BufferedWriter(new OutputStreamWriter(klient.socket.getOutputStream()));
+
+        this.printWriter = new PrintWriter(klient.socket.getOutputStream(), true);
 
 
-    public Myframe( Klient klient) throws HeadlessException {
+        this.input = new ObjectInputStream(klient.socket.getInputStream());
 
         log_re_panel = new JPanel();
         log_re_panel.setLayout(new FlowLayout());
@@ -41,20 +53,27 @@ public class Myframe extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-    Object button = e.getSource();
-    if(button ==zaloguj_sie){
-        System.out.println("do logowania");
-     logowanie();
-    }else if(button == refresh) {
-        lista_uzyt();
-        System.out.println("odświeź");
+        Object button = e.getSource();
+        if (button == zaloguj_sie) {
+            System.out.println("do logowania");
+            logowanie();
+        } else if (button == refresh) {
+            printWriter.println("lista");
 
 
-    } else{
-        System.out.println("idziemy do czatu");
-        button = (CzatButton) e.getSource();
-        czat(((CzatButton) button).login, ((CzatButton) button).watekServer);
-    }
+            lista_uzyt();
+            System.out.println("odświeź");
+
+
+        } else {
+            System.out.println("idziemy do czatu");
+            button = e.getSource();
+            try {
+                czat(((CzatButton) button).login);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
 
     }
 
@@ -100,12 +119,11 @@ public class Myframe extends JFrame implements ActionListener {
         String login = usernameField.getText();
 
 
-        Autentykacja autentykacja = new Autentykacja(this, watekServer);
+        Autentykacja autentykacja = new Autentykacja(this, printWriter);
         loginButton.addActionListener(autentykacja);
         loginPanel.add(loginButton, gbc);
 
 
-// Add the login panel to the frame or another container
         add(loginPanel);
     }
 
@@ -126,27 +144,36 @@ public class Myframe extends JFrame implements ActionListener {
         GridBagConstraints c = new GridBagConstraints();
 
         c.fill = GridBagConstraints.HORIZONTAL;
-        
 
-        int i  =0;
+
+        int i = 0;
+        ArrayList<String> lista_osob = new ArrayList<>();
 
         try {
             String[] rezultat = SqlConn.koneksja("select login from users", false).split("/");
-//            for (WatekServer watekServer : server.lista_osob) {
-//
-//
-//            if(watekServer.login != this.watekServer.login && watekServer.login != null) {
-//                CzatButton button = new CzatButton(watekServer.getLogin(), watekServer);
-//                button.addActionListener(this::actionPerformed);
-//                c.gridx = 0;
-//                c.gridy = i;
-//                gridbag.setConstraints(button, c);
-//                uzyt_panel.add(button);
-//                i++;
-//            }
-//
-//
-//            }
+            printWriter.println("lista");
+            try {
+                lista_osob = (ArrayList) input.readObject();
+                System.out.println(lista_osob.toString());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+
+            for (String osoba : lista_osob) {
+
+            if(!osoba.equals(this.login)) {
+                CzatButton button = new CzatButton(osoba);
+                button.addActionListener(this::actionPerformed);
+                c.gridx = 0;
+                c.gridy = i;
+                gridbag.setConstraints(button, c);
+                uzyt_panel.add(button);
+                i++;
+            }
+
+            }
 
 
         } catch (SQLException e) {
@@ -170,10 +197,10 @@ public class Myframe extends JFrame implements ActionListener {
     }
 
 
-    public void czat(String name, WatekServer odbiorca) {
-        JFrame czat_frame = new JFrame("Czat z " + name );
+    public void czat(String name) throws IOException {
+        JFrame czat_frame = new JFrame("Czat z " + name);
 
-        czat_frame.setSize(300,300);
+        czat_frame.setSize(300, 300);
         // Create the chat history text area
         JTextArea chatHistory = new JTextArea();
         chatHistory.setEditable(false);
@@ -182,7 +209,6 @@ public class Myframe extends JFrame implements ActionListener {
         JTextField inputField = new JTextField(15);
         JButton sendButton = new JButton("Send");
 
-        // Add an action listener to the send button
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -192,16 +218,9 @@ public class Myframe extends JFrame implements ActionListener {
 
                 // Add the message to the chat history
                 chatHistory.append("Ty: " + message + "\n");
-                odbiorca.printWriter.println(message);
-                try {
-                    watekServer.out.write(message);
-                    watekServer.out.flush();
-                    odbiorca.out.write(message);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
+                printWriter.println(name + ":" + message);
 
-                System.out.println("Wysłano do " + odbiorca.login);
+
             }
         });
 
@@ -217,7 +236,7 @@ public class Myframe extends JFrame implements ActionListener {
 
         // Show the window
         czat_frame.setVisible(true);
-
+        KlientListener klientListener = new KlientListener(name, chatHistory, this.klient.socket);
 
 
 

@@ -3,12 +3,15 @@ import java.awt.*;
 
 public class CzatButton extends JButton {
     String login;
-    WatekServer watekServer;
-    public CzatButton(String text, WatekServer watekServer) {
+    public CzatButton(String text) {
 
         super(text);
-        this.watekServer = watekServer;
+
         this.login = text;
 
+    }
+
+    public String getLogin() {
+        return login;
     }
 }
