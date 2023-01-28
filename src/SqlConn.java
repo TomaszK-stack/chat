@@ -17,7 +17,8 @@ class SqlConn {
         String rezultat = "";
         System.out.println(query);
         try{
-        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/repodb", "root", "");
+        Connection con = DriverManager.getConnection("jdbc:mysql://tkserver.mysql.database.azure.com:3306/repodb?useSSL=true", "Tomek", "mysql123.");
+//        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306", "user", "");
         Statement stmt = con.createStatement();
         if (czy_update){
             stmt.executeUpdate(query);

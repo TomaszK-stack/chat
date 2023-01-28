@@ -39,6 +39,7 @@ public class Myframe extends JFrame implements ActionListener {
         zaloguj_sie = new JButton("Zaloguj się");
         zarejestruj = new JButton("Zarejestruj");
         zaloguj_sie.addActionListener(this::actionPerformed);
+        zarejestruj.addActionListener(this::actionPerformed);
 
         log_re_panel.add(zaloguj_sie);
         log_re_panel.add(zarejestruj);
@@ -151,17 +152,9 @@ public class Myframe extends JFrame implements ActionListener {
 
         try {
             String[] rezultat = SqlConn.koneksja("select login from users", false).split("/");
-            printWriter.println("lista");
-            try {
-                lista_osob = (ArrayList) input.readObject();
-                System.out.println(lista_osob.toString());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
 
-            for (String osoba : lista_osob) {
+
+            for (String osoba : rezultat) {
 
             if(!osoba.equals(this.login)) {
                 CzatButton button = new CzatButton(osoba);
