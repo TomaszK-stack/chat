@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Myframe extends JFrame implements ActionListener {
     JPanel log_re_panel;
@@ -23,6 +24,9 @@ public class Myframe extends JFrame implements ActionListener {
 
     ObjectInputStream input;
     Klient klient;
+    JPanel rej_panel = new JPanel();
+
+    HashMap<String, JTextArea> mapa_czatow = new HashMap<>();
 
     public Myframe(Klient klient) throws HeadlessException, IOException {
         this.klient = klient;
@@ -58,13 +62,10 @@ public class Myframe extends JFrame implements ActionListener {
         if (button == zaloguj_sie) {
             System.out.println("do logowania");
             logowanie();
-        } else if (button == refresh) {
-            printWriter.println("lista");
 
+        }else if(button == zarejestruj){
 
-            lista_uzyt();
-            System.out.println("odświeź");
-
+            rejestracja();
 
         } else {
             System.out.println("idziemy do czatu");
@@ -77,8 +78,62 @@ public class Myframe extends JFrame implements ActionListener {
         }
 
     }
+    public void rejestracja(){
+        log_re_panel.setVisible(false);
+
+
+        rej_panel.setLayout(new GridBagLayout());
+
+        JLabel usernameLabel = new JLabel("Username: ");
+        JTextField usernameField = new JTextField(20);
+
+        JLabel passwordLabel = new JLabel("Password: ");
+        JPasswordField passwordField = new JPasswordField(20);
+
+        LoginButton loginButton = new LoginButton(usernameField, passwordField, "Rejestracja");
+
+
+// Add the components to the panel using a GridBagLayout
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        rej_panel.add(usernameLabel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        rej_panel.add(usernameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        rej_panel.add(passwordLabel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        rej_panel.add(passwordField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+
+        String haslo = new String(passwordField.getPassword());
+        String login = usernameField.getText();
+
+
+
+        Autentykacja autentykacja = new Autentykacja(this, printWriter);
+        loginButton.addActionListener(autentykacja);
+        rej_panel.add(loginButton, gbc);
+
+        rej_panel.setVisible(true);
+        add(rej_panel);
+
+
+    }
 
     public void logowanie() {
+        rej_panel.setVisible(false);
         log_re_panel.setVisible(false);
 
         loginPanel.setLayout(new GridBagLayout());
@@ -89,7 +144,7 @@ public class Myframe extends JFrame implements ActionListener {
         JLabel passwordLabel = new JLabel("Password: ");
         JPasswordField passwordField = new JPasswordField(20);
 
-        LoginButton loginButton = new LoginButton(usernameField, passwordField);
+        LoginButton loginButton = new LoginButton(usernameField, passwordField, "Logowanie");
 
 
 // Add the components to the panel using a GridBagLayout
@@ -128,7 +183,9 @@ public class Myframe extends JFrame implements ActionListener {
         add(loginPanel);
     }
 
-    public void lista_uzyt() {
+    public void lista_uzyt() throws IOException {
+        KlientListener klientListener = new KlientListener(this, klient.socket);
+
         uzyt_panel.setVisible(false);
         loginPanel.setVisible(false);
         setLayout(new BorderLayout());
@@ -191,6 +248,7 @@ public class Myframe extends JFrame implements ActionListener {
 
 
     public void czat(String name) throws IOException {
+
         JFrame czat_frame = new JFrame("Czat z " + name);
 
         czat_frame.setSize(300, 300);
@@ -201,7 +259,7 @@ public class Myframe extends JFrame implements ActionListener {
         // Create the input field and send button
         JTextField inputField = new JTextField(15);
         JButton sendButton = new JButton("Send");
-
+        mapa_czatow.put(name, chatHistory);
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -229,7 +287,7 @@ public class Myframe extends JFrame implements ActionListener {
 
         // Show the window
         czat_frame.setVisible(true);
-        KlientListener klientListener = new KlientListener(name, chatHistory, this.klient.socket);
+
 
 
 

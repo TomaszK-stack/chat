@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
 
@@ -15,22 +16,34 @@ public class Autentykacja implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        LoginButton loginButton = (LoginButton) e.getSource();
-        String username = new String(loginButton.username.getText());
-        String password = new String(loginButton.password.getPassword());
-        try {
-            if(walidacja(username, password) == true){
 
-                System.out.println("czat");
-                this.myframe.login = username;
-                printWriter.println("dodaj " + username);
-                myframe.lista_uzyt();
-            }else {
-                myframe.logowanie();
-                System.out.println("Nieprawidłowe dane");
+        LoginButton loginButton = (LoginButton) e.getSource();
+        if(loginButton.getText() == "Logowanie"){
+            String username = new String(loginButton.username.getText());
+            String password = new String(loginButton.password.getPassword());
+            try {
+                if (walidacja(username, password) == true) {
+
+                    System.out.println("czat");
+                    this.myframe.login = username;
+                    printWriter.println("dodaj " + username);
+                    myframe.lista_uzyt();
+                } else {
+                    myframe.logowanie();
+                    System.out.println("Nieprawidłowe dane");
+                }
+            } catch (SQLException | IOException ex) {
+                throw new RuntimeException(ex);
             }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+        }else{
+
+            try {
+                Rejestracja.rejestracja(loginButton.username.getText(), new String(loginButton.password.getPassword()));
+                myframe.logowanie();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+
         }
 
     }

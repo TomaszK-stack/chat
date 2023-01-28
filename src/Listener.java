@@ -36,14 +36,16 @@ public class Listener extends Thread{
                     server.mapa_osob.put(message.split(" ")[1], printWriter);
                     System.out.println("dodaje");
 
-                }else if(message.equals("lista")){
-                    out.writeObject(server.lista_osob);
-                    System.out.println("odsułam listę " + server.lista_osob.toString());
+
 
                 }else{
                     PrintWriter temp_writer = server.mapa_osob.get(message.split(":")[0]);
-                    temp_writer.println(this.login + ":" +  message.split(":")[1]);
+                        try {
+                            temp_writer.println(this.login + ":" + message.split(":")[1]);
+                            System.out.println("wiadomość wysłana");
+                        }catch (NullPointerException e){
 
+                        }
 
 
                 }
@@ -51,7 +53,7 @@ public class Listener extends Thread{
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            System.out.println(message + " to jest wiadomośc");
+
 
 
         }
